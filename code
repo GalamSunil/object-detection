@@ -1,0 +1,31 @@
+import cv2
+import numpy as np
+import tensorflow as tf
+
+model = tf.saved_model.load("/content/archive (2).tar.gz")
+
+cap = cv2.VideoCapture('/content/6187065-hd_1080_2048_30fps.mp4') 
+
+tracker = cv2.TrackerCSRT_create()
+
+while True:
+    ret, frame = cap.read()
+    if not ret:
+        break
+
+    input_tensor = tf.convert_to_tensor(frame)
+    detections = model(input_tensor)
+
+    for detection in detections:
+        
+        x, y, w, h = detection['box']
+
+        tracker.init(frame, (x, y, w, h))
+
+    cv2.imshow('Object Detection and Tracking', frame)
+
+    if cv2.waitKey(1) == 27:  
+        break
+
+cap.release()
+cv2.destroyAllWindows()
